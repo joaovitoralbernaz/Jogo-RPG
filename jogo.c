@@ -50,8 +50,8 @@ void createHero()
 {
     hero.posx = 0;
     hero.posy = 0;
-    hero.vida = 150;
-    hero.vidaMax = 150;
+    hero.vida = 100;
+    hero.vidaMax = 100;
     hero.atq = 25;
     hero.def = 10;
     hero.danoRecebido = 0;
@@ -61,15 +61,27 @@ void createHero()
 }
 void createExit(int sizeMap)
 {
-    int randCol, randRow;
+    int x, y;
 
     do
     {
-        randCol = rand() % sizeMap;
-        randRow = rand() % sizeMap;
-    } while (map[randRow][randCol] != '.');
+        x = rand() % sizeMap;
+        y = rand() % sizeMap;
+    } while (map[y][x] != '.');
 
-    map[randRow][randCol] = 'S';
+    map[y][x] = 'S';
+}
+void createWall(int sizeMap)
+{
+    int x, y;
+
+    do
+    {
+        x = rand() % sizeMap;
+        y = rand() % sizeMap;
+    } while (map[y][x] != '.');
+
+    map[y][x] = 'P';
 }
 void createMonstro(int qtdMonster, int map[][sizeMap], int sizeMap)
 {
@@ -253,7 +265,7 @@ void drawHPBar(int x, int y, int vida, int vidaMax)
 
     printf("] %3d/%3d", vida, vidaMax);
 }
-int battle(struct personagem *enemy, char *enemyIcon)
+int battle(struct personagem *enemy, char *enimyIcon)
 {
     int heroDice;
     int enemyDice;
@@ -315,11 +327,11 @@ int battle(struct personagem *enemy, char *enemyIcon)
 
         if (heroTurn)
         {
-            int damage = hero.atq + (rand() % 6) - (enemy->def / 2);
-            hero.danoCausado = damage;
+            int damage = hero.atq + (rand() % 6) - enemy->def;
+            hero.danoCausado += damage;
 
             if (damage < 1)
-                damage = 1;
+                damage = 0;
 
             enemy->vida -= damage;
 
@@ -334,12 +346,13 @@ int battle(struct personagem *enemy, char *enemyIcon)
         }
         else
         {
-            int damage = enemy->atq + (rand() % 6) - (hero.def / 2);
-            hero.danoRecebido = damage;
+            int damage = enemy->atq + (rand() % 6) - hero.def;
+            hero.danoRecebido += damage;
 
-            hero.vida -= damage;
             if (damage < 1)
                 damage = 1;
+
+            hero.vida -= damage;
 
             if (hero.vida < 0)
                 hero.vida = 0;
@@ -378,7 +391,7 @@ int battle(struct personagem *enemy, char *enemyIcon)
     else
     {
         gotoxy(40, 11);
-        printf("%s VOCE MORREU!", MONSTER);
+        printf("%s VOCE MORREU!", ene);
 
         gotoxy(37, 13);
         printf("Fim de jogo.");
@@ -522,13 +535,13 @@ int moveHero(int sizeMap)
         }
         map[novoX][novoY] = '.';
     }
-    else if (map[novoX][novoY] == 'S' && boss.vida <= 0)
+    else if (map[novoX][novoY] == 'S')
     {
-        return 2;
-    }
-    else
-    {
-        printf("A porta esta trancada. Parece que algo poderoso ainda esta vivo por aqui...");
+        if (boss.vida <= 0)
+            return 2;
+
+        printf("A porta esta trancada...");
+        getch();
         return 0;
     }
 
@@ -814,36 +827,36 @@ void carregarFase(int fase)
     switch (fase)
     {
     case 1:
-
-        createmap(10);
+        sizeMap = 10;
+        createmap(sizeMap);
         createHero();
-        createMonstro(3, map, 10);
-        createBoss(map, 10);
-        createChest(map, 10);
-        createExit(10);
+        createMonstro(3, map, sizeMap);
+        createBoss(map, sizeMap);
+        createChest(map, sizeMap);
+        createExit(sizeMap);
         break;
 
     case 2:
-    
-        createmap(15);
+        sizeMap = 15;
+        createmap(sizeMap);
         createHero();
-        createMonstro(5, map, 15);
-        createBoss(map, 15);
-        createChest(map, 15);
-        createChest(map, 15);
-        createExit(15);
+        createMonstro(5, map, sizeMap);
+        createBoss(map, sizeMap);
+        createChest(map, sizeMap);
+        createChest(map, sizeMap);
+        createExit(sizeMap);
         break;
 
     case 3:
-    
-        createmap(20);
+        sizeMap = 20;
+        createmap(sizeMap);
         createHero();
-        createMonstro(8, map, 20);
-        createBoss(map, 20);
-        createChest(map, 20);
-        createChest(map, 20);
-        createChest(map, 20);
-        createExit(20);
+        createMonstro(8, map, sizeMap);
+        createBoss(map, sizeMap);
+        createChest(map, sizeMap);
+        createChest(map, sizeMap);
+        createChest(map, sizeMap);
+        createExit(sizeMap);
         break;
     }
 }
@@ -866,9 +879,9 @@ void IniciarJogo()
 
         while (1)
         {
-            printMap(MAX);
+            printMap(sizeMap);
 
-            resultado = moveHero(MAX);
+            resultado = moveHero(sizeMap);
 
             if (resultado == -1)
                 break;
